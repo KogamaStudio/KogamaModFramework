@@ -8,11 +8,14 @@ using System.Threading.Tasks;
 using UnityEngine;
 using KogamaModFramework.Conversion;
 using Il2CppMV.Common;
+using System.Collections;
 
 namespace KogamaModFramework.Operations;
 
 public static class WorldObjectOperations
 {
+    private static int RootGroupId => MVGameControllerBase.WOCM?.RootGroup?.Id ?? -1;
+
     public static void AddLink(int outputWoId, int inputWoId)
     {
         var outputWo = GetObject(outputWoId);
@@ -74,7 +77,7 @@ public static class WorldObjectOperations
         if (wocm == null) return new List<int>();
 
         var ids = new Il2CppSystem.Collections.Generic.HashSet<int>();
-        wocm.GetAllWoIds(75578, ids);
+        wocm.GetAllWoIds(RootGroupId, ids);
 
         var result = new List<int>();
 
@@ -108,6 +111,20 @@ public static class WorldObjectOperations
 
         wo.Rotation = rotation;
         MVGameControllerBase.OperationRequests.TransferOwnership(woId, 0, wo.Transform);
+    }
+
+    public static IEnumerator AddItemToWorld(int itemId, Vector3 position, Quaternion rotation, System.Action<int> callback)
+    {
+        int pre = MVGameControllerBase.WOCM.worldObjects.Count;
+        MVGameControllerBase.OperationRequests.AddItemToWorld(itemId, RootGroupId, position, rotation, true, true, false);
+
+        float timeout = Time.time + 2.0f;
+        while (MVGameControllerBase.WOCM.worldObjects.Count == pre && Time.time < timeout)
+            yield return null;
+
+        int nid = -1;
+        foreach (int k in MVGameControllerBase.WOCM.worldObjects.Keys) if (k > nid) nid = k;
+        callback(nid);
     }
 }
 
