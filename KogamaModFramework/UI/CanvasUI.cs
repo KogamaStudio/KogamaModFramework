@@ -129,6 +129,37 @@ public static class CanvasUI
         }
     }
 
+    public static Button CreateCloseButton(Canvas canvas, Vector2 pos, Vector2 size, System.Action onClick = null)
+    {
+        var buttonGO = new GameObject("CloseButton");
+        buttonGO.transform.SetParent(canvas.transform, false);
+
+        var rectTransform = buttonGO.AddComponent<RectTransform>();
+        rectTransform.anchoredPosition = pos;
+        rectTransform.sizeDelta = size;
+
+        var image = buttonGO.AddComponent<Image>();
+        image.color = new Color(0f, 0.51f, 0.97f);
+
+        var button = buttonGO.AddComponent<Button>();
+        button.targetGraphic = image;
+
+        var iconGO = new GameObject("Icon");
+        iconGO.transform.SetParent(buttonGO.transform, false);
+        var iconRect = iconGO.AddComponent<RectTransform>();
+        iconRect.sizeDelta = new Vector2(128*0.4f, 128*0.4f);
+
+        var iconImage = iconGO.AddComponent<Image>();
+        var iconTexture = Resources.FindObjectsOfTypeAll<Texture2D>().FirstOrDefault(t => t.name == "icon_x");
+        if (iconTexture != null)
+            iconImage.sprite = Sprite.Create(iconTexture, new Rect(0, 0, iconTexture.width, iconTexture.height), Vector2.zero);
+
+        if (onClick != null)
+            button.onClick.AddListener(onClick);
+
+        return button;
+    }
+
     public static Text CreateText(Canvas canvas, string text, Vector2 pos, int fontSize = 28, Font font = null, TextAnchor alignment = TextAnchor.MiddleCenter)
     {
         var textGO = new GameObject("Text");
@@ -157,6 +188,21 @@ public static class CanvasUI
         rectTransform.sizeDelta = size;
         var image = panelGO.AddComponent<Image>();
         image.color = color ?? new Color(0.19f, 0.23f, 0.27f);
+        return image;
+    }
+
+    public static Image CreateImage(Canvas canvas, Texture2D texture, Vector2 pos, Vector2 size)
+    {
+        var imageGO = new GameObject("Image");
+        imageGO.transform.SetParent(canvas.transform, false);
+
+        var rectTransform = imageGO.AddComponent<RectTransform>();
+        rectTransform.anchoredPosition = pos;
+        rectTransform.sizeDelta = size;
+
+        var image = imageGO.AddComponent<Image>();
+        image.sprite = Sprite.Create(texture, new Rect(0, 0, texture.width, texture.height), Vector2.zero);
+
         return image;
     }
 }
