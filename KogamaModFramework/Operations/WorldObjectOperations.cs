@@ -12,6 +12,7 @@ using System.Collections;
 using HarmonyLib;
 using System;
 using Il2CppInterop.Runtime;
+using static MelonLoader.bHaptics;
 
 namespace KogamaModFramework.Operations;
 
@@ -74,6 +75,20 @@ public static class WorldObjectOperations
         return result;
     }
 
+    public static void AddObjectLink(int objectConnectorWoId, int objectWoId)
+    {
+        var connectorWo = GetObject(objectConnectorWoId);
+        var objectWo = GetObject(objectWoId);
+        if (connectorWo == null || objectWo == null) return;
+
+        ObjectLink link = new ObjectLink();
+        link.objectConnectorWOID = objectConnectorWoId;
+        link.objectWOID = objectWoId;
+        link.isSet = true;
+
+        MVGameControllerBase.OperationRequests.AddObjectLink(link);
+    }
+
     public static List<int> GetAllWorldObjectIds()
     {
         var wocm = MVGameControllerBase.WOCM;
@@ -126,30 +141,61 @@ public static class WorldObjectOperations
 
     public static IEnumerator AddItemToWorld(int itemId, Vector3 position, Quaternion rotation, System.Action<int> callback)
     {
-        Vector3 tempPos = new Vector3(UnityEngine.Random.Range(-1000f, 1000f), UnityEngine.Random.Range(-1000f, 1000f), UnityEngine.Random.Range(-1000f, 1000f));
-        Quaternion tempRot = UnityEngine.Random.rotation;
         int createdId = -1;
-
         System.Action<int, MVWorldObjectClient> handler = (id, wo) =>
         {
-            if (wo.itemId == itemId &&
-                Vector3.Distance(wo.Position, tempPos) < 0.1f &&
-                Quaternion.Angle(wo.Rotation, tempRot) < 1f)
+            if (wo.itemId == itemId)
                 createdId = id;
         };
 
         WorldObjectCreatedPatch.OnWorldObjectCreated += handler;
-        MVGameControllerBase.OperationRequests.AddItemToWorld(itemId, RootGroupId, tempPos, tempRot, true, true, false);
+        MVGameControllerBase.OperationRequests.AddItemToWorld(itemId, RootGroupId, position, rotation, true, true, false);
 
         while (createdId == -1)
             yield return null;
 
         WorldObjectCreatedPatch.OnWorldObjectCreated -= handler;
-
-        SetPosition(createdId, position);
-        SetRotation(createdId, rotation);
-
         callback(createdId);
+    }
+
+    public static IEnumerator CloneObject(int woId, System.Action<int> callback)
+    {
+        var root = GetObject(woId) as MVWorldObjectClient;
+        if (root == null)
+        {
+            callback(-1);
+            yield break;
+        }
+
+        var oldIds = new HashSet<int>(WorldObjectOperations.GetAllWorldObjectIds());
+
+        MVGameControllerBase.OperationRequests.CloneWorldObjectTree(root, true, false, true);
+
+        int clonedId = -1;
+        while (clonedId == -1)
+        {
+            var newIds = WorldObjectOperations.GetAllWorldObjectIds();
+            var diff = newIds.Except(oldIds).FirstOrDefault();
+            if (diff != 0)
+                clonedId = diff;
+            yield return null;
+        }
+
+        callback(clonedId);
+    }
+
+    private static void UpdateTimeTriggerValue(int worldObjectId, string key, float value)
+    {
+        MVGameControllerBase.OperationRequests.UpdateWorldObjectDataPartial(worldObjectId, key, value);
+    }
+
+    public static void SetProperty(int woId, string propertyName, object value)
+    {
+        var wo = GetObject(woId) as MVWorldObjectClient;
+        if (wo == null) return;
+
+        var il2cppValue = (Il2CppSystem.Object)System.Convert.ToSingle(value);
+        MVGameControllerBase.OperationRequests.UpdateWorldObjectDataPartial(woId, propertyName.ToLower(), il2cppValue);
     }
 }
 

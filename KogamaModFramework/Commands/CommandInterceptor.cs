@@ -14,10 +14,12 @@ internal class CommandInterceptor
         if (chatMsg.StartsWith("/"))
         {
             string[] parts = chatMsg[1..].Split(' ');
-            KogamaModFramework.Commands.CommandManager.Execute(parts[0], parts[1..]);
-            return false;
+            if (CommandManager.HasCommand(parts[0]))
+            {
+                CommandManager.Execute(parts[0], parts[1..]);
+                return false;
+            }
         }
-
         return true;
     }
 }

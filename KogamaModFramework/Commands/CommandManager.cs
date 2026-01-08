@@ -20,5 +20,10 @@ public static class CommandManager
         if (commands.TryGetValue(cmdName.ToLower(), out var cmd)) 
             cmd.Execute(args);
     }
+
+    public static bool HasCommand(string cmdName)
+    {
+        return commands.ContainsKey(cmdName.ToLower());
+    }
 }
 
