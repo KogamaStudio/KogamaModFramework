@@ -1,4 +1,5 @@
-﻿using System;
+﻿using KogamaModFramework.Helpers;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -13,7 +14,6 @@ internal static class State
     internal static void InitializeAllPatches()
     {
         if (InitializedPatches) return;
-
         var harmony = new HarmonyLib.Harmony("KogamaModFramework");
         harmony.PatchAll(typeof(State).Assembly);
 

@@ -13,6 +13,9 @@ using HarmonyLib;
 using System;
 using Il2CppInterop.Runtime;
 using static MelonLoader.bHaptics;
+using Il2CppAssets.Scripts.WorldObjectTypes.EditablePickupItem;
+using Il2CppWorldObjectTypes.MVDoor;
+using Il2CppWorldObjectTypes.VehicleEnergy;
 
 namespace KogamaModFramework.Operations;
 
@@ -141,20 +144,24 @@ public static class WorldObjectOperations
 
     public static IEnumerator AddItemToWorld(int itemId, Vector3 position, Quaternion rotation, System.Action<int> callback)
     {
+        Quaternion tempRot = UnityEngine.Random.rotation;
         int createdId = -1;
+
         System.Action<int, MVWorldObjectClient> handler = (id, wo) =>
         {
-            if (wo.itemId == itemId)
+            if (wo.itemId == itemId &&
+                Quaternion.Angle(wo.Rotation, tempRot) < 1f)
                 createdId = id;
         };
 
         WorldObjectCreatedPatch.OnWorldObjectCreated += handler;
-        MVGameControllerBase.OperationRequests.AddItemToWorld(itemId, RootGroupId, position, rotation, true, true, false);
+        MVGameControllerBase.OperationRequests.AddItemToWorld(itemId, RootGroupId, position, tempRot, true, true, false);
 
         while (createdId == -1)
             yield return null;
 
         WorldObjectCreatedPatch.OnWorldObjectCreated -= handler;
+        SetRotation(createdId, rotation);
         callback(createdId);
     }
 
