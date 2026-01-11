@@ -10,7 +10,7 @@ using UnityEngine.EventSystems;
 using Il2Cpp;
 using MelonLoader;
 
-namespace KogamaModFramework.UI;
+namespace KogamaModFramework.UI.CanvasUI;
 
 public static class CanvasUI
 {
@@ -28,7 +28,7 @@ public static class CanvasUI
         return canvas;
     }
 
-    public static Button CreateButton(Canvas canvas, string text, Vector2 pos, Vector2 size, Font font = null, int fontSize = 28, System.Action onClick = null)
+    public static Button CreateButton(Canvas canvas, string text, Vector2 pos, Vector2 size, Font font = null, int fontSize = 28, Action onClick = null)
     {
         var buttonGO = new GameObject("Button");
         buttonGO.transform.SetParent(canvas.transform, false);
@@ -129,7 +129,7 @@ public static class CanvasUI
         }
     }
 
-    public static Button CreateCloseButton(Canvas canvas, Vector2 pos, Vector2 size, System.Action onClick = null)
+    public static Button CreateCloseButton(Canvas canvas, Vector2 pos, Vector2 size, Action onClick = null)
     {
         var buttonGO = new GameObject("CloseButton");
         buttonGO.transform.SetParent(canvas.transform, false);
@@ -191,7 +191,7 @@ public static class CanvasUI
         return image;
     }
 
-    public static Toggle CreateCheckbox(Canvas canvas, Vector2 pos, Vector2 size, System.Action<bool> onChange = null)
+    public static Toggle CreateCheckbox(Canvas canvas, Vector2 pos, Vector2 size, Action<bool> onChange = null)
     {
         if (size == default)
             size = new Vector2(32, 32);
@@ -225,6 +225,70 @@ public static class CanvasUI
             toggle.onValueChanged.AddListener(onChange);
 
         return toggle;
+    }
+
+    public static InputField CreateInputField(Canvas canvas, string placeholder, Vector2 pos, Vector2 size, Font font = null, Action<string> onValueChanged = null, Action<string> onEndEdit = null)
+    {
+        var inputGO = new GameObject("InputField");
+        inputGO.transform.SetParent(canvas.transform, false);
+
+        var rectTransform = inputGO.AddComponent<RectTransform>();
+        rectTransform.anchoredPosition = pos;
+        rectTransform.sizeDelta = size;
+
+        var bgImage = inputGO.AddComponent<Image>();
+        bgImage.color = new Color(0.16f, 0.19f, 0.23f);
+
+        var inputField = inputGO.AddComponent<InputField>();
+        inputField.targetGraphic = bgImage;
+
+        var textGO = new GameObject("Text");
+        textGO.transform.SetParent(inputGO.transform, false);
+        var textRect = textGO.AddComponent<RectTransform>();
+        textRect.anchorMin = Vector2.zero;
+        textRect.anchorMax = Vector2.one;
+        textRect.offsetMin = new Vector2(5, 0);
+        textRect.offsetMax = new Vector2(-5, 0);
+
+        var textComp = textGO.AddComponent<Text>();
+        textComp.font = font ?? Resources.FindObjectsOfTypeAll<Font>().FirstOrDefault(f => f.name == "OpenSans-Regular");
+        textComp.fontSize = 28;
+        textComp.color = Color.white;
+        textComp.alignment = TextAnchor.MiddleCenter;
+
+        inputField.textComponent = textComp;
+
+        var placeholderGO = new GameObject("Placeholder");
+        placeholderGO.transform.SetParent(inputGO.transform, false);
+        var placeholderRect = placeholderGO.AddComponent<RectTransform>();
+        placeholderRect.anchorMin = Vector2.zero;
+        placeholderRect.anchorMax = Vector2.one;
+        placeholderRect.offsetMin = new Vector2(5, 0);
+        placeholderRect.offsetMax = new Vector2(-5, 0);
+
+        var placeholderText = placeholderGO.AddComponent<Text>();
+        placeholderText.text = placeholder;
+        placeholderText.font = font ?? Resources.FindObjectsOfTypeAll<Font>().FirstOrDefault(f => f.name == "OpenSans-Regular");
+        placeholderText.fontSize = 28;
+        placeholderText.color = new Color(1, 1, 1, 0.5f);
+        placeholderText.alignment = TextAnchor.MiddleCenter;
+
+        inputField.placeholder = placeholderText;
+
+        var colors = inputField.colors;
+        colors.normalColor = new Color(0.16f, 0.19f, 0.23f);
+        colors.highlightedColor = new Color(0.16f, 0.19f, 0.23f);
+        colors.pressedColor = new Color(0.16f, 0.19f, 0.23f);
+        colors.selectedColor = new Color(0.16f, 0.19f, 0.23f);
+        inputField.colors = colors;
+
+        if (onValueChanged != null)
+            inputField.onValueChanged.AddListener(onValueChanged);
+
+        if (onEndEdit != null)
+            inputField.onEndEdit.AddListener(onEndEdit);
+
+        return inputField;
     }
 
     public static Image CreateImage(Canvas canvas, Texture2D texture, Vector2 pos, Vector2 size)

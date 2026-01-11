@@ -4,12 +4,22 @@
     <OutputType>Library</OutputType>
     <TargetFramework>net6.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
-    <Nullable>disable</Nullable>
+	<LangVersion>latest</LangVersion>
     <Platforms>AnyCPU;x64</Platforms>
 	<Version>0.1.0</Version>
   </PropertyGroup>
 
+  <ItemGroup>
+    <PackageReference Include="ImGui.NET" Version="1.89.5" />
+    <PackageReference Include="System.Runtime.CompilerServices.Unsafe" Version="6.1.2" />
+    <PackageReference Include="Vortice.DirectX" Version="3.8.2" />
+  </ItemGroup>
+
 	<ItemGroup>
+		<Reference Include="ClickableTransparentOverlay">
+			<HintPath>Lib\ClickableTransparentOverlay.dll</HintPath>
+			<Private>false</Private>
+		</Reference>
 		<Reference Include="MelonLoader">
 			<HintPath>lib\MelonLoader.dll</HintPath>
 			<Private>false</Private>

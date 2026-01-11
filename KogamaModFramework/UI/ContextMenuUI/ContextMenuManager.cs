@@ -5,7 +5,7 @@ using KogamaModFramework.Operations;
 using MelonLoader;
 using UnityEngine.Events;
 
-namespace KogamaModFramework.UI;
+namespace KogamaModFramework.UI.ContextMenuUI;
 
 [HarmonyPatch]
 public static class ContextMenuManager
